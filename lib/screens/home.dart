@@ -15,8 +15,11 @@ class _HomeState extends State<Home> {
   List<ToDo> _foundToDo = [];
   final _todoController = TextEditingController();
 
+  var _selectedSort = 1;
+
   @override
   void initState() {
+    todosList.sort((a, b) => b.createdAt!.compareTo(a.createdAt!));
     _foundToDo = todosList;
     super.initState();
   }
@@ -40,16 +43,55 @@ class _HomeState extends State<Home> {
                         margin: const EdgeInsets.only(
                           top: 50,
                           bottom: 20,
+                          left: 10,
+                          right: 20,
                         ),
-                        child: const Text(
-                          "All ToDos",
-                          style: TextStyle(
-                            fontSize: 30,
-                            fontWeight: FontWeight.w500,
-                          ),
+                        child: Row(
+                          children: [
+                            const Text(
+                              "All ToDos",
+                              style: TextStyle(
+                                fontSize: 30,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const Spacer(),
+                            DropdownButton(
+                              items: const [
+                                DropdownMenuItem(
+                                  value: 1,
+                                  child: Text(
+                                    "Recent",
+                                    style: TextStyle(color: tdGray),
+                                  ),
+                                ),
+                                DropdownMenuItem(
+                                  value: 2,
+                                  child: Text(
+                                    "Older",
+                                    style: TextStyle(color: tdGray),
+                                  ),
+                                ),
+                                DropdownMenuItem(
+                                  value: 3,
+                                  child: Text(
+                                    "Name",
+                                    style: TextStyle(color: tdGray),
+                                  ),
+                                ),
+                              ],
+                              value: _selectedSort,
+                              onChanged: dropDownCallback,
+                              icon: Container(
+                                  padding: const EdgeInsets.only(left: 5),
+                                  child: const Icon(Icons.sort)),
+                              underline: Container(),
+                              iconEnabledColor: tdGray,
+                            )
+                          ],
                         ),
                       ),
-                      for (ToDo todoo in _foundToDo.reversed)
+                      for (ToDo todoo in _foundToDo)
                         ToDoItem(
                           todo: todoo,
                           onToDoChanged: _handleToDoChange,
@@ -132,18 +174,20 @@ class _HomeState extends State<Home> {
     });
   }
 
-  void _deleteToDoItem(String id) {
+  void _deleteToDoItem(String createdAt) {
     setState(() {
-      todosList.removeWhere((item) => item.id == id);
+      todosList.removeWhere((item) => item.createdAt == createdAt);
     });
   }
 
   void _addToDoItem(String toDo) {
     setState(() {
-      todosList.add(ToDo(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        todoText: toDo,
-      ));
+      todosList.insert(
+          0,
+          ToDo(
+            createdAt: DateTime.now().millisecondsSinceEpoch.toString(),
+            todoText: toDo,
+          ));
     });
 
     _todoController.clear();
@@ -163,6 +207,22 @@ class _HomeState extends State<Home> {
 
     setState(() {
       _foundToDo = results;
+    });
+  }
+
+  void dropDownCallback(int? val) {
+    setState(() {
+      _selectedSort = val!;
+      if (val == 1) {
+        // Recent
+        todosList.sort((a, b) => b.createdAt!.compareTo(a.createdAt!));
+      } else if (val == 2) {
+        // Older
+        todosList.sort((a, b) => a.createdAt!.compareTo(b.createdAt!));
+      } else if (val == 3) {
+        // Name
+        todosList.sort((a, b) => a.todoText!.compareTo(b.todoText!));
+      }
     });
   }
 

@@ -34,13 +34,25 @@ class ToDoItem extends StatelessWidget {
           todo.isDone ? Icons.check_box : Icons.check_box_outline_blank,
           color: tdBlue,
         ),
-        title: Text(
-          todo.todoText!,
-          style: TextStyle(
-            fontSize: 16,
-            color: tdBlack,
-            decoration: todo.isDone ? TextDecoration.lineThrough : null,
-          ),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              todo.todoText!,
+              style: TextStyle(
+                fontSize: 16,
+                color: tdBlack,
+                decoration: todo.isDone ? TextDecoration.lineThrough : null,
+              ),
+            ),
+            Text(
+              _formatDate(todo.createdAt!),
+              style: const TextStyle(
+                fontSize: 10,
+                color: tdGray,
+              ),
+            )
+          ],
         ),
         trailing: Container(
           padding: const EdgeInsets.all(0),
@@ -56,11 +68,40 @@ class ToDoItem extends StatelessWidget {
             iconSize: 18,
             icon: const Icon(Icons.delete),
             onPressed: () {
-              onDeleteToDo(todo.id);
+              onDeleteToDo(todo.createdAt);
             },
           ),
         ),
       ),
     );
+  }
+
+  String _formatDate(String milliseconds) {
+    var now = DateTime.now().millisecondsSinceEpoch;
+    var formattedDate = "";
+    // si es hoy
+    if (int.parse(milliseconds) > now - 86400000) {
+      var date = DateTime.fromMillisecondsSinceEpoch(int.parse(milliseconds));
+      formattedDate = "${date.hour}:${date.minute}";
+    } else if (int.parse(milliseconds) > now - 172800000) {
+      formattedDate = "Yesterday";
+    } else if (int.parse(milliseconds) > now - 604800000) {
+      var date = DateTime.fromMillisecondsSinceEpoch(int.parse(milliseconds));
+      final daysOfWeek = {
+        1: 'Monday',
+        2: 'Tuesday',
+        3: 'Wednesday',
+        4: 'Thursday',
+        5: 'Friday',
+        6: 'Saturday',
+        7: 'Sunday',
+      };
+      formattedDate = daysOfWeek[date.weekday] ?? '';
+    } else {
+      var date = DateTime.fromMillisecondsSinceEpoch(int.parse(milliseconds));
+      formattedDate = "${date.day}/${date.month}/${date.year}";
+    }
+
+    return formattedDate;
   }
 }
